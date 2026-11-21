@@ -50,7 +50,7 @@ translator_guard() {
 }
 
 check gofmt 1 gofmt_clean
-check "go vet" 5 go vet ./...
+check "go vet" 1 go vet ./...
 check "go mod tidy" 5 go mod tidy -diff
 check "codex catalog valid" 5 go run ./cmd/validate_codex_models --file internal/registry/models/codex_client_models.json
 check "test inputs inventory" 5 python3 .github/scripts/proxx_ci.py inventory

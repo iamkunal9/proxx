@@ -76,6 +76,6 @@ A job or check over its budget fails. Budgets don't widen to make CI green: fix 
 |---|---|---|
 | Any required job, setup included | 35s | `proxx-budget.sh` (last step of checks, build, every shard) |
 | gofmt | 1s | `proxx-checks.sh` |
-| go vet (lint and type check) | 5s | `proxx-checks.sh` |
+| go vet (lint and type check) | 1s (brief: lint under 1s) | `proxx-checks.sh` |
 | tidy, catalog, inventory | 5s each | `proxx-checks.sh` |
 | translator guard | 1s | `proxx-checks.sh` |
