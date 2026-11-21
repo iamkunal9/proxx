@@ -67,3 +67,15 @@ Two lists cover tests that read files outside their own package:
 
 The `inventory` check fails CI when a test reads outside its package without being listed, so
 neither list can rot. Dry-run selection with `python3 .github/scripts/proxx_ci.py select --files <paths>`.
+
+## Budgets
+
+A job or check over its budget fails. Budgets don't widen to make CI green: fix the slow thing, or buy faster hardware.
+
+| What | Budget | Where enforced |
+|---|---|---|
+| Any required job, setup included | 35s | `proxx-budget.sh` (last step of checks, build, every shard) |
+| gofmt | 1s | `proxx-checks.sh` |
+| go vet (lint and type check) | 1s (brief: lint under 1s) | `proxx-checks.sh` |
+| tidy, catalog, inventory | 5s each | `proxx-checks.sh` |
+| translator guard | 1s | `proxx-checks.sh` |

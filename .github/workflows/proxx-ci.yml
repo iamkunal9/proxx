@@ -19,9 +19,12 @@ concurrency:
 
 permissions:
   contents: read
+  actions: read # proxx-budget.sh reads this run's job start times
 
 env:
   SHARDS: "8"
+  # Slowest required job, setup included (docs/proxx/ci.md). A job over budget fails.
+  JOB_BUDGET: "35"
   # Selection narrows PR feedback only when a merge queue runs the full suite before main.
   # Set the repo variable PROXX_MERGE_QUEUE=true once the merge queue is on.
   SELECT_BASE: ${{ inputs.select_base || (github.event_name == 'pull_request' && vars.PROXX_MERGE_QUEUE == 'true' && github.event.pull_request.base.sha) || '' }}
@@ -37,6 +40,11 @@ jobs:
           fetch-depth: 0
       - uses: ./.github/actions/proxx-setup
       - run: bash .github/scripts/proxx-checks.sh ${{ github.event.pull_request.base.sha }}
+      - name: Budget
+        if: always()
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: bash .github/scripts/proxx-budget.sh "checks (fmt, vet, tidy, catalog, inventory, translator guard)" "$JOB_BUDGET"
 
   build:
     runs-on: ubuntu-latest
@@ -46,6 +54,11 @@ jobs:
           filter: blob:none
       - uses: ./.github/actions/proxx-setup
       - run: go build -o /dev/null ./cmd/server
+      - name: Budget
+        if: always()
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: bash .github/scripts/proxx-budget.sh "build" "$JOB_BUDGET"
 
   test:
     name: test (${{ matrix.shard }}/8)
@@ -77,6 +90,11 @@ jobs:
           python3 .github/scripts/proxx_ci.py run --race
           --shards "$SHARDS" --index $(( ${{ matrix.shard }} - 1 ))
           --packages selected.txt --out test-output.json
+      - name: Budget
+        if: always()
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: bash .github/scripts/proxx-budget.sh "test (${{ matrix.shard }}/8)" "$JOB_BUDGET"
       - name: Upload timings
         if: always() && (github.event_name == 'push' || github.event_name == 'workflow_dispatch' || failure())
         uses: actions/upload-artifact@v4
